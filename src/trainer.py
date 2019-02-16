@@ -28,6 +28,7 @@ import deepdish as dd
 
 # For drawing
 from .util import renderer as vis_util
+import random
 
 
 class HMRTrainer(object):
@@ -42,6 +43,7 @@ class HMRTrainer(object):
         mocap_loader is a tuple (pose, shape)
         """
         # Config + path
+        # print("++++++++++++++++++++++++++++")
         self.config = config
         self.model_dir = config.model_dir
         self.load_path = config.load_path
@@ -74,19 +76,26 @@ class HMRTrainer(object):
         # First make sure data_format is right
         if self.data_format == 'NCHW':
             # B x H x W x 3 --> B x 3 x H x W
-            data_loader['image'] = tf.transpose(data_loader['image'],
+            data_loader['image_1'] = tf.transpose(data_loader['image_1'],
                                                 [0, 3, 1, 2])
 
         
         # data_loader is a dict, ['has3d', 'image', 'label3d', 'label']
-        ## shiyu 
-        self.image_loader = data_loader['image']
-        self.image_loader_2 = data_loader['image']
+        
+        ## shiyu multi-view
+        
+        self.image_loader = data_loader['image_1']
+        self.image_loader_2 = data_loader['image_2']
+        self.image_loader_3 = data_loader['image_3']
+        self.image_loader_4 = data_loader['image_4']
+
         # shape (64, 224, 224, 3)
         
         ## shiyu
-        self.kp_loader = data_loader['label']
-        self.kp_loader_2 = data_loader['label']
+        self.kp_loader = data_loader['label_1']
+        self.kp_loader_2 = data_loader['label_2']
+        self.kp_loader_3 = data_loader['label_3']
+        self.kp_loader_4 = data_loader['label_4']
         ## shape=(64, 19, 3)
 
         if self.use_3d_label:
@@ -214,14 +223,27 @@ class HMRTrainer(object):
     def build_model(self):
         img_enc_fn, threed_enc_fn = get_encoder_fn_separate(self.model_type)
         # Extract image features.
-        ## shiyu
+        ## shiyu multi-view
+
         self.img_feat, self.E_var = img_enc_fn(
             self.image_loader, weight_decay=self.e_wd, reuse=tf.AUTO_REUSE)
+        
         self.img_feat_2, self.E_var_2 = img_enc_fn(
             self.image_loader_2, weight_decay=self.e_wd, reuse=tf.AUTO_REUSE)
+        
+        self.img_feat_3, self.E_var_3 = img_enc_fn(
+            self.image_loader_3, weight_decay=self.e_wd, reuse=tf.AUTO_REUSE)
+        
+        self.img_feat_4, self.E_var_4 = img_enc_fn(
+            self.image_loader_4, weight_decay=self.e_wd, reuse=tf.AUTO_REUSE)
 
+
+        ## shiyu ,multi-view
         loss_kps = []
         loss_kps_2 = []
+        loss_kps_3 = []
+        loss_kps_4 = []
+        
         if self.use_3d_label:
             loss_3d_joints, loss_3d_params = [], []
         # For discriminator
@@ -229,8 +251,11 @@ class HMRTrainer(object):
         # Start loop
         # 85D
         ## shiyu
+
         theta_prev = self.load_mean_param()
         theta_prev_2 = self.load_mean_param()
+        theta_prev_3 = self.load_mean_param()
+        theta_prev_4 = self.load_mean_param()
         # For visualizations
         self.all_verts = []
         self.all_pred_kps = []
@@ -240,8 +265,9 @@ class HMRTrainer(object):
 
         # Main IEF loop main view
         # shiyu
+        print('regressing main view...')
         for i in np.arange(self.num_stage):
-            print('Iteration %d' % i)
+            # print('Iteration %d' % i)
             # ---- Compute outputs
             state = tf.concat([self.img_feat, theta_prev], 1)
 
@@ -289,8 +315,9 @@ class HMRTrainer(object):
             theta_prev = theta_here
 
         ## shiyu view 2, this part could be embeded in a function 
+        print('regressing second view...')
         for i in np.arange(self.num_stage):
-            print('Iteration %d' % i)
+            # print('Iteration %d' % i)
             # ---- Compute outputs
             state = tf.concat([self.img_feat_2, theta_prev_2], 1)
 
@@ -320,33 +347,89 @@ class HMRTrainer(object):
             loss_kps_2.append(self.e_loss_weight * self.keypoint_loss(
                 self.kp_loader_2, pred_kp))
             pred_Rs = tf.reshape(pred_Rs, [-1, 24, 9])
-            # if self.use_3d_label:
-            #     loss_poseshape, loss_joints = self.get_3d_loss(
-            #         pred_Rs, shapes, Js)
-            #     loss_3d_params.append(loss_poseshape)
-            #     loss_3d_joints.append(loss_joints)
-
-            # # Save pred_rotations for Discriminator
-            # fake_rotations.append(pred_Rs[:, 1:, :])
-            # fake_shapes.append(shapes)
-
-            # # Save things for visualiations:
-            # self.all_verts.append(tf.gather(verts, self.show_these))
-            # self.all_pred_kps.append(tf.gather(pred_kp, self.show_these))
-            # self.all_pred_cams.append(tf.gather(cams, self.show_these))
-
             # Finally update to end iteration.
-            theta_prev_2 = theta_here_2       
+            theta_prev_2 = theta_here_2     
 
+        ## shiyu view 3, this part could be embeded in a function 
+        print('regressing third view...')
+        for i in np.arange(self.num_stage):
+            # print('Iteration %d' % i)
+            # ---- Compute outputs
+            state = tf.concat([self.img_feat_3, theta_prev_3], 1)
 
+            if i == 0:
+                delta_theta, threeD_var = threed_enc_fn(
+                    state,
+                    num_output=self.total_params,
+                    reuse=True)
+                self.E_var_3.extend(threeD_var)
+            else:
+                delta_theta, _ = threed_enc_fn(
+                    state, num_output=self.total_params, reuse=True)
+
+            # Compute new theta
+            theta_here_3 = theta_prev_3 + delta_theta
+            # cam = N x 3, pose N x self.num_theta, shape: N x 10
+            ## shiyu, here we are using the poses and shapes from main view, only keep the camera
+            cams = theta_here_3[:, :self.num_cam]
+            poses = poses
+            shapes = shapes
+            # Rs_wglobal is Nx24x3x3 rotation matrices of poses
+            verts, Js, pred_Rs = self.smpl(shapes, poses, get_skin=True)
+            pred_kp = batch_orth_proj_idrot(
+                Js, cams, name='proj2d_stage%d' % i)
+
+            # --- Compute losses:
+            loss_kps_3.append(self.e_loss_weight * self.keypoint_loss(
+                self.kp_loader_3, pred_kp))
+            pred_Rs = tf.reshape(pred_Rs, [-1, 24, 9])
+            # Finally update to end iteration.
+            theta_prev_3 = theta_here_3      
+
+        ## shiyu view 4, this part could be embeded in a function
+        print('regressing forth view...') 
+        for i in np.arange(self.num_stage):
+            # print('Iteration %d' % i)
+            # ---- Compute outputs
+            state = tf.concat([self.img_feat_4, theta_prev_4], 1)
+
+            if i == 0:
+                delta_theta, threeD_var = threed_enc_fn(
+                    state,
+                    num_output=self.total_params,
+                    reuse=True)
+                self.E_var_4.extend(threeD_var)
+            else:
+                delta_theta, _ = threed_enc_fn(
+                    state, num_output=self.total_params, reuse=True)
+
+            # Compute new theta
+            theta_here_4 = theta_prev_4 + delta_theta
+            # cam = N x 3, pose N x self.num_theta, shape: N x 10
+            ## shiyu, here we are using the poses and shapes from main view, only keep the camera
+            cams = theta_here_4[:, :self.num_cam]
+            poses = poses
+            shapes = shapes
+            # Rs_wglobal is Nx24x3x3 rotation matrices of poses
+            verts, Js, pred_Rs = self.smpl(shapes, poses, get_skin=True)
+            pred_kp = batch_orth_proj_idrot(
+                Js, cams, name='proj2d_stage%d' % i)
+
+            # --- Compute losses:
+            loss_kps_4.append(self.e_loss_weight * self.keypoint_loss(
+                self.kp_loader_4, pred_kp))
+            pred_Rs = tf.reshape(pred_Rs, [-1, 24, 9])
+            # Finally update to end iteration.
+            theta_prev_4 = theta_here_4   
+        
         if not self.encoder_only:
             self.setup_discriminator(fake_rotations, fake_shapes)
 
         # Gather losses.
         with tf.name_scope("gather_e_loss"):
             # Just the last loss.
-            # shiyu, add loss from view 2
-            self.e_loss_kp = loss_kps[-1] + 0.3 * loss_kps_2[-1] 
+            # shiyu, add loss from view 2, 3, 4
+            self.e_loss_kp = loss_kps[-1] + 0.3 * loss_kps_2[-1] + 0.3 * loss_kps_3[-1] + 0.3 * loss_kps_4[-1]
 
             if self.encoder_only:
                 self.e_loss = self.e_loss_kp

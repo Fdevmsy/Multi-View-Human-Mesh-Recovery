@@ -145,9 +145,9 @@ def convert_to_example(image_data, image_path, height, width, label, center):
     return example
 
 
-def convert_to_example_wmosh(image_data, image_path, height, width, label,
-                             center, gt3d, pose, shape, scale_factors,
-                             start_pt, cam):
+def convert_to_example_wmosh(image_data_1, image_data_2, image_data_3, image_data_4, 
+    image_path, height_1, height_2,height_3,height_4,width_1, width_2,width_3,width_4,label_1, label_2, label_3, label_4, center_1,center_2,center_3,center_4, gt3d, pose, 
+    shape, scale_factors, start_pt, cam):
     """Build an Example proto for an image example.
     Args:
       image_data: string, JPEG encoding of RGB image;
@@ -164,9 +164,18 @@ def convert_to_example_wmosh(image_data, image_path, height, width, label,
     """
     from os.path import basename
     image_format = 'JPEG'
-    if label.shape[0] != 3:
-        label = label.T
-    if label.shape[1] > 14:
+    if label_1.shape[0] != 3:
+        label_1 = label_1.T
+
+    if label_2.shape[0] != 3:
+        label_2 = label_2.T
+
+    if label_3.shape[0] != 3:
+        label_3 = label_3.T
+
+    if label_4.shape[0] != 3:
+        label_4 = label_4.T
+    if label_1.shape[1] > 14:
         print('This shouldnt be happening')
         import ipdb
         ipdb.set_trace()
@@ -180,24 +189,17 @@ def convert_to_example_wmosh(image_data, image_path, height, width, label,
 
     example = tf.train.Example(
         features=tf.train.Features(feature={
-            'image/height':
-            int64_feature(height),
-            'image/width':
-            int64_feature(width),
-            'image/center':
-            int64_feature(center.astype(np.int)),
-            'image/x':
-            float_feature(label[0, :].astype(np.float)),
-            'image/y':
-            float_feature(label[1, :].astype(np.float)),
-            'image/visibility':
-            int64_feature(label[2, :].astype(np.int)),
+            # 'image/height':
+            # int64_feature(height),
+            # 'image/width':
+            # int64_feature(width),
+            # 'image/center':
+            # int64_feature(center.astype(np.int)),
             'image/format':
             bytes_feature(tf.compat.as_bytes(image_format)),
             'image/filename':
             bytes_feature(tf.compat.as_bytes(basename(image_path))),
-            'image/encoded':
-            bytes_feature(tf.compat.as_bytes(image_data)),
+
             'mosh/pose':
             float_feature(pose.astype(np.float)),
             'mosh/shape':
@@ -212,6 +214,80 @@ def convert_to_example_wmosh(image_data, image_path, height, width, label,
             int64_feature(has_3d),
             'image/cam':
             float_feature(cam.astype(np.float)),
+
+            # 'image/encoded':
+            # bytes_feature(tf.compat.as_bytes(image_data)),
+            # 'image/x':
+            # float_feature(label[0, :].astype(np.float)),
+            # 'image/y':
+            # float_feature(label[1, :].astype(np.float)),
+            # 'image/visibility':
+            # int64_feature(label[2, :].astype(np.int)),
+
+            ## main view 1 shiyu
+            'image_1/encoded':
+            bytes_feature(tf.compat.as_bytes(image_data_1)),
+            'image_1/x':
+            float_feature(label_1[0, :].astype(np.float)),
+            'image_1/y':
+            float_feature(label_1[1, :].astype(np.float)),
+            'image_1/visibility':
+            int64_feature(label_1[2, :].astype(np.int)),
+            'image_1/height':
+            int64_feature(height_1),
+            'image_1/width':
+            int64_feature(width_1),
+            'image_1/center':
+            int64_feature(center_1.astype(np.int)),
+
+            # other views shiyu view 2 
+            'image_2/encoded':
+            bytes_feature(tf.compat.as_bytes(image_data_2)),
+            'image_2/x':
+            float_feature(label_2[0, :].astype(np.float)),
+            'image_2/y':
+            float_feature(label_2[1, :].astype(np.float)),
+            'image_2/visibility':
+            int64_feature(label_2[2, :].astype(np.int)),
+            'image_2/height':
+            int64_feature(height_2),
+            'image_2/width':
+            int64_feature(width_2),
+            'image_2/center':
+            int64_feature(center_2.astype(np.int)),
+        
+            # other views shiyu view 3 
+            'image_3/encoded':
+            bytes_feature(tf.compat.as_bytes(image_data_3)),
+            'image_3/x':
+            float_feature(label_3[0, :].astype(np.float)),
+            'image_3/y':
+            float_feature(label_3[1, :].astype(np.float)),
+            'image_3/visibility':
+            int64_feature(label_3[2, :].astype(np.int)),
+            'image_3/height':
+            int64_feature(height_3),
+            'image_3/width':
+            int64_feature(width_3),
+            'image_3/center':
+            int64_feature(center_3.astype(np.int)),
+
+            # other views shiyu view 4
+            'image_4/encoded':
+            bytes_feature(tf.compat.as_bytes(image_data_4)),
+            'image_4/x':
+            float_feature(label_4[0, :].astype(np.float)),
+            'image_4/y':
+            float_feature(label_4[1, :].astype(np.float)),
+            'image_4/visibility':
+            int64_feature(label_4[2, :].astype(np.int)),
+            'image_4/height':
+            int64_feature(height_4),
+            'image_4/width':
+            int64_feature(width_4),
+            'image_4/center':
+            int64_feature(center_4.astype(np.int)),
+            # check filename maybe
         }))
 
     return example

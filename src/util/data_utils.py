@@ -30,29 +30,84 @@ def parse_example_proto(example_serialized, has_3d=False):
         'mosh/gt3d'          : float_feature(shape.astype(np.float)),
     """
     feature_map = {
-        'image/encoded':
-        tf.FixedLenFeature([], dtype=tf.string, default_value=''),
-        'image/height':
-        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
-        'image/width':
-        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+
+        # 'image/height':
+        # tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+        # 'image/width':
+        # tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
         'image/filename':
         tf.FixedLenFeature([], dtype=tf.string, default_value=''),
-        'image/center':
-        tf.FixedLenFeature((2, 1), dtype=tf.int64),
-        'image/visibility':
-        tf.FixedLenFeature((1, 14), dtype=tf.int64),
-        'image/x':
-        tf.FixedLenFeature((1, 14), dtype=tf.float32),
-        'image/y':
-        tf.FixedLenFeature((1, 14), dtype=tf.float32),
+        # 'image/center':
+        # tf.FixedLenFeature((2, 1), dtype=tf.int64),
+        
         'image/face_pts':
         tf.FixedLenFeature(
             (1, 15),
             dtype=tf.float32,
             default_value=[
                 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.
-            ]),
+            ]), 
+        # shiyu parse multi-view        
+        'image_1/encoded':
+        tf.FixedLenFeature([], dtype=tf.string, default_value=''),
+        'image_1/x':
+        tf.FixedLenFeature((1, 14), dtype=tf.float32),
+        'image_1/y':
+        tf.FixedLenFeature((1, 14), dtype=tf.float32),
+        'image_1/visibility':
+        tf.FixedLenFeature((1, 14), dtype=tf.int64),
+        'image_1/height':
+        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+        'image_1/width':
+        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+        'image_1/center':
+        tf.FixedLenFeature((2, 1), dtype=tf.int64),
+
+        'image_2/encoded':
+        tf.FixedLenFeature([], dtype=tf.string, default_value=''),
+        'image_2/x':
+        tf.FixedLenFeature((1, 14), dtype=tf.float32),
+        'image_2/y':
+        tf.FixedLenFeature((1, 14), dtype=tf.float32),
+        'image_2/visibility':
+        tf.FixedLenFeature((1, 14), dtype=tf.int64),
+        'image_2/height':
+        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+        'image_2/width':
+        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+        'image_2/center':
+        tf.FixedLenFeature((2, 1), dtype=tf.int64),
+
+        'image_3/encoded':
+        tf.FixedLenFeature([], dtype=tf.string, default_value=''),
+        'image_3/x':
+        tf.FixedLenFeature((1, 14), dtype=tf.float32),
+        'image_3/y':
+        tf.FixedLenFeature((1, 14), dtype=tf.float32),
+        'image_3/visibility':
+        tf.FixedLenFeature((1, 14), dtype=tf.int64),
+        'image_3/height':
+        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+        'image_3/width':
+        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+        'image_3/center':
+        tf.FixedLenFeature((2, 1), dtype=tf.int64),
+
+        'image_4/encoded':
+        tf.FixedLenFeature([], dtype=tf.string, default_value=''),
+        'image_4/x':
+        tf.FixedLenFeature((1, 14), dtype=tf.float32),
+        'image_4/y':
+        tf.FixedLenFeature((1, 14), dtype=tf.float32),
+        'image_4/visibility':
+        tf.FixedLenFeature((1, 14), dtype=tf.int64),
+        'image_4/height':
+        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+        'image_4/width':
+        tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
+        'image_4/center':
+        tf.FixedLenFeature((2, 1), dtype=tf.int64),
+
     }
     if has_3d:
         feature_map.update({
@@ -68,27 +123,86 @@ def parse_example_proto(example_serialized, has_3d=False):
         })
 
     features = tf.parse_single_example(example_serialized, feature_map)
-    print("test case")
-    print(features)
-    print()
-    height = tf.cast(features['image/height'], dtype=tf.int32)
-    width = tf.cast(features['image/width'], dtype=tf.int32)
-    center = tf.cast(features['image/center'], dtype=tf.int32)
+    # print("test case")
+    # print(features)
+    # print()
+
+    ## shiyu multi-view
+    # height = tf.cast(features['image/height'], dtype=tf.int32)
+    # width = tf.cast(features['image/width'], dtype=tf.int32)
+    # center = tf.cast(features['image/center'], dtype=tf.int32)
+
+    height_1 = tf.cast(features['image_1/height'], dtype=tf.int32)
+    width_1 = tf.cast(features['image_1/width'], dtype=tf.int32)
+    center_1 = tf.cast(features['image_1/center'], dtype=tf.int32)
+
+    height_2 = tf.cast(features['image_2/height'], dtype=tf.int32)
+    width_2 = tf.cast(features['image_2/width'], dtype=tf.int32)
+    center_2 = tf.cast(features['image_2/center'], dtype=tf.int32)
+
+    height_3 = tf.cast(features['image_3/height'], dtype=tf.int32)
+    width_3 = tf.cast(features['image_3/width'], dtype=tf.int32)
+    center_3 = tf.cast(features['image_3/center'], dtype=tf.int32)
+
+    height_4 = tf.cast(features['image_4/height'], dtype=tf.int32)
+    width_4 = tf.cast(features['image_4/width'], dtype=tf.int32)
+    center_4 = tf.cast(features['image_4/center'], dtype=tf.int32)
+
+
+
     fname = tf.cast(features['image/filename'], dtype=tf.string)
     fname = tf.Print(fname, [fname], message="image name: ")
 
+    ###
+    ### face is empty, so same for all 4 views, shiyu 
     face_pts = tf.reshape(
         tf.cast(features['image/face_pts'], dtype=tf.float32), [3, 5])
 
-    vis = tf.cast(features['image/visibility'], dtype=tf.float32)
-    x = tf.cast(features['image/x'], dtype=tf.float32)
-    y = tf.cast(features['image/y'], dtype=tf.float32)
+    # vis = tf.cast(features['image/visibility'], dtype=tf.float32)
+    # x = tf.cast(features['image/x'], dtype=tf.float32)
+    # y = tf.cast(features['image/y'], dtype=tf.float32)
+    # label = tf.concat([x, y, vis], 0)
+    # label = tf.concat([label, face_pts], 1)
+    # image = decode_jpeg(features['image/encoded'])
 
-    label = tf.concat([x, y, vis], 0)
-    label = tf.concat([label, face_pts], 1)
 
-    image = decode_jpeg(features['image/encoded'])
-    image_size = tf.concat([height, width], 0)
+    ## add multi view shiyu 
+    vis_1 = tf.cast(features['image_1/visibility'], dtype=tf.float32)
+    x_1 = tf.cast(features['image_1/x'], dtype=tf.float32)
+    y_1 = tf.cast(features['image_1/y'], dtype=tf.float32)
+    label_1 = tf.concat([x_1, y_1, vis_1], 0)
+    label_1 = tf.concat([label_1, face_pts], 1)
+    image_1 = decode_jpeg(features['image_1/encoded'])
+    
+    vis_2 = tf.cast(features['image_2/visibility'], dtype=tf.float32)
+    x_2 = tf.cast(features['image_2/x'], dtype=tf.float32)
+    y_2 = tf.cast(features['image_2/y'], dtype=tf.float32)
+    label_2 = tf.concat([x_2, y_2, vis_2], 0)
+    label_2 = tf.concat([label_2, face_pts], 1)
+    image_2 = decode_jpeg(features['image_2/encoded'])
+
+    vis_3 = tf.cast(features['image_3/visibility'], dtype=tf.float32)
+    x_3 = tf.cast(features['image_3/x'], dtype=tf.float32)
+    y_3 = tf.cast(features['image_3/y'], dtype=tf.float32)
+    label_3 = tf.concat([x_3, y_3, vis_3], 0)
+    label_3 = tf.concat([label_3, face_pts], 1)
+    image_3 = decode_jpeg(features['image_3/encoded'])
+
+    vis_4 = tf.cast(features['image_4/visibility'], dtype=tf.float32)
+    x_4 = tf.cast(features['image_4/x'], dtype=tf.float32)
+    y_4 = tf.cast(features['image_4/y'], dtype=tf.float32)
+    label_4 = tf.concat([x_4, y_4, vis_4], 0)
+    label_4 = tf.concat([label_4, face_pts], 1)
+    image_4 = decode_jpeg(features['image_4/encoded'])
+
+    ### shiyu
+
+    ## multi_view
+    # image_size = tf.concat([height, width], 0)
+    image_size_1 = tf.concat([height_1, width_1], 0)
+    image_size_2 = tf.concat([height_2, width_2], 0)
+    image_size_3 = tf.concat([height_3, width_3], 0)
+    image_size_4 = tf.concat([height_4, width_4], 0)
 
     if has_3d:
         pose = tf.cast(features['mosh/pose'], dtype=tf.float32)
@@ -98,9 +212,9 @@ def parse_example_proto(example_serialized, has_3d=False):
         has_smpl3d = tf.cast(features['meta/has_3d'], dtype=tf.bool)
         return image, image_size, label, center, fname, pose, shape, gt3d, has_smpl3d
     else:
-        return image, image_size, label, center, fname
-
-
+        # return image, image_size, label, center, fname
+        # return image, label 
+        return image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4, image_size_1, image_size_2, image_size_3, image_size_4, center_1, center_2,center_3, center_4
 def rescale_image(image):
     """
     Rescales image from [0, 1] to [-1, 1]
@@ -181,19 +295,27 @@ def decode_jpeg(image_buffer, name=None):
 
 def jitter_center(center, trans_max):
     with tf.name_scope(None, 'jitter_center', [center, trans_max]):
-        rand_trans = tf.random_uniform(
-            [2, 1], minval=-trans_max, maxval=trans_max, dtype=tf.int32)
+        # rand_trans = tf.random_uniform(
+        #     [2, 1], minval=-trans_max, maxval=trans_max, dtype=tf.int32)
+        # shiyu make it constant
+        rand_trans = tf.random_uniform([2, 1], minval=0, maxval=1, dtype=tf.int32)
         return center + rand_trans
 
 
 def jitter_scale(image, image_size, keypoints, center, scale_range):
     with tf.name_scope(None, 'jitter_scale', [image, image_size, keypoints]):
+        # scale_factor = tf.random_uniform(
+        #     [1],
+        #     minval=scale_range[0],
+        #     maxval=scale_range[1],
+        #     dtype=tf.float32)
+
         scale_factor = tf.random_uniform(
             [1],
-            minval=scale_range[0],
-            maxval=scale_range[1],
-            dtype=tf.float32)
-        new_size = tf.to_int32(tf.to_float(image_size) * scale_factor)
+            minval=1,
+            maxval=2,
+            dtype=tf.int32)
+        new_size = tf.to_int32(tf.to_float(image_size) * tf.to_float(scale_factor))
         new_image = tf.image.resize_images(image, new_size)
 
         # This is [height, width] -> [y, x] -> [col, row]

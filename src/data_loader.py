@@ -14,6 +14,9 @@ import tensorflow as tf
 from .tf_smpl.batch_lbs import batch_rodrigues
 from .util import data_utils
 
+# shiyu 
+import cv2
+
 # _3D_DATASETS = ['h36m', 'up', 'mpi_inf_3dhp']
 _3D_DATASETS = ['h36m']
 
@@ -76,17 +79,52 @@ class DataLoader(object):
           label_batch: batched keypoint labels N x K x 3
         """
         files = data_utils.get_all_files(self.dataset_dir, self.datasets)
-
-        do_shuffle = True
+        # print('++++++++++++++++')
+        # print(files)
+        do_shuffle = False
         fqueue = tf.train.string_input_producer(
             files, shuffle=do_shuffle, name="input")
-        image, label = self.read_data(fqueue, has_3d=False)
+        # print(fqueue)
+        ## multi-view shiyu 
+        
+        image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4 = self.read_data(fqueue, has_3d=False)
+        # image, label = self.read_data(fqueue, has_3d=False)
+        # image_1.set_shape((300,300,3))
+        # image_2.set_shape((300,300,3))
+        # image_3.set_shape((300,300,3))
+        # image_4.set_shape((300,300,3))
+        # print(image_1.shape)
+        # 244, 244, 3
+
+        # shiyu
+        # with tf.Session() as sess:
+        #     init_op = tf.initialize_all_variables()
+        #     sess.run(init_op)
+        #     coord = tf.train.Coordinator()
+        #     threads = tf.train.start_queue_runners(coord=coord)
+        #     for i in range(100):
+        #         example, l= sess.run([image_4, label_4])
+        #         print('-------------')
+                
+        #         # print(example)
+        #         # cv2.imshow('image',example)
+        #         # cv2.waitKey(0)
+        #         # cv2.destroyAllWindows()
+        #         example_norm = cv2.normalize(example, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        #         cv2.imwrite('./test_see/image' + str(i) +'.jpg',example_norm)
+
+        # coord.request_stop()
+        # coord.join(threads)
+        # shiyu 
         min_after_dequeue = 5000
         num_threads = 8
         capacity = min_after_dequeue + 3 * self.batch_size
 
-        pack_these = [image, label]
-        pack_name = ['image', 'label']
+        # pack_these = [image, label]
+        # pack_name = ['image', 'label']
+        ## multi-view, shiyu
+        pack_these = [image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4]
+        pack_name = ['image_1', 'label_1', 'image_2', 'label_2', 'image_3', 'label_3', 'image_4', 'label_4']
 
         all_batched = tf.train.shuffle_batch(
             pack_these,
@@ -121,6 +159,7 @@ class DataLoader(object):
         and other for data with 3d.
         And send [2 x *] to train.*batch
         """
+        # print("+++++++++++++++++++++")
         datasets_no3d = [d for d in self.datasets if d not in _3D_DATASETS]
         datasets_yes3d = [d for d in self.datasets if d in _3D_DATASETS]
         files_no3d = data_utils.get_all_files(self.dataset_dir, datasets_no3d)
@@ -261,18 +300,34 @@ class DataLoader(object):
                 label3d = tf.concat(
                     [tf.reshape(rotations, [-1]), shape, gt3d_flat], 0)
             else:
-                image, image_size, label, center, fname = data_utils.parse_example_proto(
-                    example_serialized)
-                image, label = self.image_preprocessing(
-                    image, image_size, label, center)
-
+                # shiyu only image and label is needed
+                # image, image_size, label, center, fname = data_utils.parse_example_proto(
+                #     example_serialized)
+                image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4, image_size_1, image_size_2, image_size_3, image_size_4, center_1, center_2,center_3, center_4 = data_utils.parse_example_proto(example_serialized)
+                # shiyu
+                ## multi-view
+                image_1, label_1 = self.image_preprocessing(
+                    image_1, image_size_1, label_1, center_1)
+                image_2, label_2 = self.image_preprocessing(
+                    image_2, image_size_2, label_2, center_2)
+                image_3, label_3 = self.image_preprocessing(
+                    image_3, image_size_3, label_3, center_3)
+                image_4, label_4 = self.image_preprocessing(
+                    image_4, image_size_4, label_4, center_4)
+                # shiyu
             # label should be K x 3
-            label = tf.transpose(label)
-
+            ## shiyu multi-view
+            # label = tf.transpose(label)
+            label_1 = tf.transpose(label_1)
+            label_2 = tf.transpose(label_2)
+            label_3 = tf.transpose(label_3)
+            label_4 = tf.transpose(label_4)
+            # print("+++++++++++")
+            # print(image)
             if has_3d:
                 return image, label, label3d, has_smpl3d
             else:
-                return image, label
+                return image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4 
 
     def image_preprocessing(self,
                             image,
@@ -287,12 +342,14 @@ class DataLoader(object):
             visibility = label[2, :]
             keypoints = label[:2, :]
 
+            ## shiyu don't do random ,do constant
             # Randomly shift center.
             print('Using translation jitter: %d' % self.trans_max)
             center = data_utils.jitter_center(center, self.trans_max)
             # randomly scale image.
             image, keypoints, center = data_utils.jitter_scale(
                 image, image_size, keypoints, center, self.scale_range)
+            ## shiyu 
 
             # Pad image with safe margin.
             # Extra 50 for safety.

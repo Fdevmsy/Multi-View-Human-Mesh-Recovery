@@ -37,7 +37,7 @@ flags.DEFINE_string('smpl_face_path', SMPL_FACE_PATH,
 flags.DEFINE_string('load_path', None, 'path to trained model')
 flags.DEFINE_string('pretrained_model_path', None,
                     'if not None, fine-tunes from this ckpt')
-flags.DEFINE_integer('batch_size', 8,
+flags.DEFINE_integer('batch_size', 1,
                      'Input image size to the network after preprocessing')
 
 # Don't change if testing:
@@ -72,7 +72,7 @@ flags.DEFINE_boolean(
     'if set, no adversarial prior is trained = monsters')
 
 flags.DEFINE_boolean(
-    'use_3d_label', True,
+    'use_3d_label', False,
     'Uses 3D labels if on.')
 
 # Hyper parameters:
@@ -88,9 +88,12 @@ flags.DEFINE_float('d_loss_weight', 1, 'weight on discriminator')
 flags.DEFINE_float('e_3d_weight', 1, 'weight on E_3d')
 
 # Data augmentation
-flags.DEFINE_integer('trans_max', 20, 'Value to jitter translation')
-flags.DEFINE_float('scale_max', 1.23, 'Max value of scale jitter')
-flags.DEFINE_float('scale_min', 0.8, 'Min value of scale jitter')
+# flags.DEFINE_integer('trans_max', 20, 'Value to jitter translation')
+flags.DEFINE_integer('trans_max', 0, 'Value to jitter translation')
+# flags.DEFINE_float('scale_max', 1.23, 'Max value of scale jitter')
+# flags.DEFINE_float('scale_min', 0.8, 'Min value of scale jitter')
+flags.DEFINE_float('scale_max', 1.0, 'Max value of scale jitter')
+flags.DEFINE_float('scale_min', 1.0, 'Min value of scale jitter')
 
 
 def get_config():
