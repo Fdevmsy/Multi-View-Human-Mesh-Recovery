@@ -7,7 +7,7 @@ from os.path import join, exists
 from os import makedirs
 
 import numpy as np
-
+import random
 import tensorflow as tf
 
 from .common import convert_to_example_wmosh, ImageCoder, resize_img
@@ -214,28 +214,26 @@ def save_to_tfrecord(out_name, im_paths_list, gt2ds_list, gt3ds_list, cams_list,
 	gt3ds_4 = []
 	cams_4 = []
 	
+	# init 
 	im_paths_1 = im_paths_list[0] # main view
 	gt2ds_1 = gt2ds_list[0]
 	gt3ds_1 = gt3ds_list[0]
 	cams_1 = cams_list[0]
 	
-	if num_views >=2:
-		im_paths_2 = im_paths_list[1] # view 2
-		gt2ds_2 = gt2ds_list[1]
-		gt3ds_2 = gt3ds_list[1]
-		cams_2 = cams_list[1]
+	im_paths_2 = im_paths_list[1] # view 2
+	gt2ds_2 = gt2ds_list[1]
+	gt3ds_2 = gt3ds_list[1]
+	cams_2 = cams_list[1]
 	
-	if num_views >=3:
-		im_paths_3 = im_paths_list[2] # view 3
-		gt2ds_3 = gt2ds_list[2]
-		gt3ds_3 = gt3ds_list[2]
-		cams_3 = cams_list[2]
+	im_paths_3 = im_paths_list[2] # view 3
+	gt2ds_3 = gt2ds_list[2]
+	gt3ds_3 = gt3ds_list[2]
+	cams_3 = cams_list[2]
 
-	if num_views >=4:
-		im_paths_4 = im_paths_list[3] # view 4
-		gt2ds_4 = gt2ds_list[3]
-		gt3ds_4 = gt3ds_list[3]
-		cams_4 = cams_list[3]
+	im_paths_4 = im_paths_list[3] # view 4
+	gt2ds_4 = gt2ds_list[3]
+	gt3ds_4 = gt3ds_list[3]
+	cams_4 = cams_list[3]
 
 
 	while i < len(im_paths_1):
@@ -248,7 +246,31 @@ def save_to_tfrecord(out_name, im_paths_list, gt2ds_list, gt3ds_list, cams_list,
 					print('Reading img %d/%d' % (i, len(im_paths_1)))
 				# success = add_to_tfrecord(im_paths_1[i], gt2ds_1[i], gt3ds_1[i], cams_1[i], coder, writer)
 				
+				# random shuffle views shiyu 
+				
+				random_list = random.sample(range(0, 4), 4)
+				# print(random_list)
+				im_paths_1 = im_paths_list[random_list[0]] # main view
+				gt2ds_1 = gt2ds_list[random_list[0]]
+				gt3ds_1 = gt3ds_list[random_list[0]]
+				cams_1 = cams_list[random_list[0]]
+				
+				im_paths_2 = im_paths_list[random_list[1]] # view 2
+				gt2ds_2 = gt2ds_list[random_list[1]]
+				gt3ds_2 = gt3ds_list[random_list[1]]
+				cams_2 = cams_list[random_list[1]]
+				
+				im_paths_3 = im_paths_list[random_list[2]] # view 3
+				gt2ds_3 = gt2ds_list[random_list[2]]
+				gt3ds_3 = gt3ds_list[random_list[2]]
+				cams_3 = cams_list[random_list[2]]
 
+				im_paths_4 = im_paths_list[random_list[3]] # view 4
+				gt2ds_4 = gt2ds_list[random_list[3]]
+				gt3ds_4 = gt3ds_list[random_list[3]]
+				cams_4 = cams_list[random_list[3]]
+
+				#####
 				# view 1 shiyu 
 				return_tuple_1 = add_to_tfrecord(im_paths_1[i], gt2ds_1[i], gt3ds_1[i], cams_1[i], coder, writer)
 				# check data quality, if one view is not good, then we drop all of them

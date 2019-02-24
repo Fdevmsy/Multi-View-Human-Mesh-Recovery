@@ -346,7 +346,7 @@ class DataLoader(object):
             # Randomly shift center.
             print('Using translation jitter: %d' % self.trans_max)
             center = data_utils.jitter_center(center, self.trans_max)
-            # randomly scale image.
+            # randomly scale image. don't do random ,do constant
             image, keypoints, center = data_utils.jitter_scale(
                 image, image_size, keypoints, center, self.scale_range)
             ## shiyu 
@@ -375,7 +375,8 @@ class DataLoader(object):
                 crop, crop_kp, new_pose, new_gt3d = data_utils.random_flip(
                     crop, crop_kp, pose, gt3d)
             else:
-                crop, crop_kp = data_utils.random_flip(crop, crop_kp)
+                # crop, crop_kp = data_utils.random_flip(crop, crop_kp)
+                pass
 
             # Normalize kp output to [-1, 1]
             final_vis = tf.cast(crop_kp[2, :] > 0, tf.float32)

@@ -19,7 +19,7 @@ import json
 import numpy as np
 
 curr_path = osp.dirname(osp.abspath(__file__))
-model_dir = osp.join(curr_path, '..', 'models')
+model_dir = osp.join(curr_path, '..', 'logs/HMR_mpi_inf_3dhp_resnet_fc3_dropout_Elr1e-05_kp-weight60_Dlr1e-04_transmax-0_scmax_1_scmin-1_Feb18_1146')
 if not osp.exists(model_dir):
     print('Fix path to models/')
     import ipdb
@@ -28,7 +28,7 @@ SMPL_MODEL_PATH = osp.join(model_dir, 'neutral_smpl_with_cocoplus_reg.pkl')
 SMPL_FACE_PATH = osp.join(curr_path, '../src/tf_smpl', 'smpl_faces.npy')
 
 # Default pred-trained model path for the demo.
-PRETRAINED_MODEL = osp.join(model_dir, 'model.ckpt-667589')
+PRETRAINED_MODEL = osp.join(model_dir, 'model.ckpt-441432')
 
 flags.DEFINE_string('smpl_model_path', SMPL_MODEL_PATH,
                     'path to the neurtral smpl model')

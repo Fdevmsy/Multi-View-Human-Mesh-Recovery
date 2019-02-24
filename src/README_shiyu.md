@@ -8,7 +8,11 @@
 
 
 
-1. Convert video to image:
+1. Collect mpi_inf_3dhp from here: http://gvv.mpi-inf.mpg.de/3dhp-dataset/
+
+2. cd to the downloaded folder, replace the **conf.ig** with my version under /src/shiyu_config_mpi_inf_3d/conf.ig
+
+3. Use my script to convert videos to images:
 
    ```shell
    sudo apt install ffmpeg

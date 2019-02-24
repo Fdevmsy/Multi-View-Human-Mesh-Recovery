@@ -40,6 +40,9 @@ class RunModel(object):
         
         input_size = (self.batch_size, self.img_size, self.img_size, 3)
         self.images_pl = tf.placeholder(tf.float32, shape=input_size)
+        self.images_pl_2 = tf.placeholder(tf.float32, shape=input_size)
+        self.images_pl_3 = tf.placeholder(tf.float32, shape=input_size)
+        self.images_pl_4 = tf.placeholder(tf.float32, shape=input_size)
 
         # Model Settings
         self.num_stage = config.num_stage
@@ -80,7 +83,15 @@ class RunModel(object):
         self.img_feat, self.E_var = img_enc_fn(self.images_pl,
                                                is_training=False,
                                                reuse=False)
-        
+        self.img_feat_2, self.E_var_2 = img_enc_fn(self.images_pl_2,
+                                       is_training=False,
+                                       reuse=False)
+        self.img_feat_3, self.E_var_3 = img_enc_fn(self.images_pl_3,
+                                       is_training=False,
+                                       reuse=False)
+        self.img_feat_4, self.E_var_4 = img_enc_fn(self.images_pl_4,
+                                       is_training=False,
+                                       reuse=False)
         # Start loop
         self.all_verts = []
         self.all_kps = []
