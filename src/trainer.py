@@ -160,6 +160,7 @@ class HMRTrainer(object):
 
             def load_pretrain(sess):
                 self.pre_train_saver.restore(sess, self.pretrained_model_path)
+                print('trained model restored!')
 
             init_fn = load_pretrain
 
