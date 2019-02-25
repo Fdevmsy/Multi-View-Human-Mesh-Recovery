@@ -1,6 +1,6 @@
 # TODO: Replace with where you downloaded your resnet_v2_50.
-# PRETRAINED=./models/resnet_v2_50.ckpt
-PRETRAINED=./logs/HMR_mpi_inf_3dhp_resnet_fc3_dropout_Elr1e-05_kp-weight60_Dlr1e-04_transmax-0_scmax_1_scmin-1_Feb18_1146/model.ckpt-441432
+PRETRAINED=./models/resnet_v2_50.ckpt
+# PRETRAINED=./logs/HMR_mpi_inf_3dhp_resnet_fc3_dropout_Elr1e-05_kp-weight60_Dlr1e-04_transmax-0_scmax_1_scmin-1_Feb18_1146/model.ckpt-441432
 # TODO: Replace with where you generated tf_record!
 DATA_DIR=./tf_datasets
 

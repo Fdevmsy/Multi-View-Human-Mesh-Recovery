@@ -43,7 +43,8 @@ def compute_3d_loss(params_pred, params_gt, has_gt3d):
     with tf.name_scope("3d_loss", [params_pred, params_gt, has_gt3d]):
         weights = tf.expand_dims(tf.cast(has_gt3d, tf.float32), 1)
         res = tf.losses.mean_squared_error(
-            params_gt, params_pred, weights=weights) * 0.5
+            # params_gt, params_pred, weights=weights) * 0.5
+            params_gt, params_pred) * 0.5
         return res
 
 

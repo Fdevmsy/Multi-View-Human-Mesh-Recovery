@@ -87,7 +87,7 @@ class DataLoader(object):
         # print(fqueue)
         ## multi-view shiyu 
         
-        image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4 = self.read_data(fqueue, has_3d=False)
+        image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4, gt3d_1, gt3d_2, gt3d_3, gt3d_4= self.read_data(fqueue, has_3d=False)
         # image, label = self.read_data(fqueue, has_3d=False)
         # image_1.set_shape((300,300,3))
         # image_2.set_shape((300,300,3))
@@ -119,12 +119,13 @@ class DataLoader(object):
         min_after_dequeue = 5000
         num_threads = 8
         capacity = min_after_dequeue + 3 * self.batch_size
-
+        has_3d_joints = tf.constant([True], dtype=tf.bool)
         # pack_these = [image, label]
         # pack_name = ['image', 'label']
         ## multi-view, shiyu
-        pack_these = [image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4]
-        pack_name = ['image_1', 'label_1', 'image_2', 'label_2', 'image_3', 'label_3', 'image_4', 'label_4']
+        pack_these = [image_1, label_1, gt3d_1, image_2, label_2, gt3d_2, image_3, label_3, gt3d_3, image_4, label_4, gt3d_4, has_3d_joints]
+        pack_name = ['image_1', 'label_1', 'gt3d_1', 'image_2', 'label_2', 'gt3d_2', 'image_3', 'label_3', 'gt3d_3', 'image_4', 'label_4', 'gt3d_4', 'has_3d_joints']
+        
 
         all_batched = tf.train.shuffle_batch(
             pack_these,
@@ -303,7 +304,7 @@ class DataLoader(object):
                 # shiyu only image and label is needed
                 # image, image_size, label, center, fname = data_utils.parse_example_proto(
                 #     example_serialized)
-                image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4, image_size_1, image_size_2, image_size_3, image_size_4, center_1, center_2,center_3, center_4 = data_utils.parse_example_proto(example_serialized)
+                image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4, image_size_1, image_size_2, image_size_3, image_size_4, center_1, center_2,center_3, center_4, gt3d_1, gt3d_2, gt3d_3, gt3d_4 = data_utils.parse_example_proto(example_serialized)
                 # shiyu
                 ## multi-view
                 image_1, label_1 = self.image_preprocessing(
@@ -322,12 +323,17 @@ class DataLoader(object):
             label_2 = tf.transpose(label_2)
             label_3 = tf.transpose(label_3)
             label_4 = tf.transpose(label_4)
+
+            gt3d_flat_1 = tf.reshape(gt3d_1, [-1])
+            gt3d_flat_2 = tf.reshape(gt3d_2, [-1])
+            gt3d_flat_3 = tf.reshape(gt3d_3, [-1])
+            gt3d_flat_4 = tf.reshape(gt3d_4, [-1])
             # print("+++++++++++")
             # print(image)
             if has_3d:
                 return image, label, label3d, has_smpl3d
             else:
-                return image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4 
+                return image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4, gt3d_flat_1, gt3d_flat_2, gt3d_flat_3, gt3d_flat_4
 
     def image_preprocessing(self,
                             image,

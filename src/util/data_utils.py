@@ -62,6 +62,8 @@ def parse_example_proto(example_serialized, has_3d=False):
         tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
         'image_1/center':
         tf.FixedLenFeature((2, 1), dtype=tf.int64),
+        'mosh/gt3d_1':
+        tf.FixedLenFeature((14 * 3, ), dtype=tf.float32),
 
         'image_2/encoded':
         tf.FixedLenFeature([], dtype=tf.string, default_value=''),
@@ -77,6 +79,8 @@ def parse_example_proto(example_serialized, has_3d=False):
         tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
         'image_2/center':
         tf.FixedLenFeature((2, 1), dtype=tf.int64),
+        'mosh/gt3d_2':
+        tf.FixedLenFeature((14 * 3, ), dtype=tf.float32),
 
         'image_3/encoded':
         tf.FixedLenFeature([], dtype=tf.string, default_value=''),
@@ -92,6 +96,8 @@ def parse_example_proto(example_serialized, has_3d=False):
         tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
         'image_3/center':
         tf.FixedLenFeature((2, 1), dtype=tf.int64),
+        'mosh/gt3d_3':
+        tf.FixedLenFeature((14 * 3, ), dtype=tf.float32),
 
         'image_4/encoded':
         tf.FixedLenFeature([], dtype=tf.string, default_value=''),
@@ -107,6 +113,8 @@ def parse_example_proto(example_serialized, has_3d=False):
         tf.FixedLenFeature([1], dtype=tf.int64, default_value=-1),
         'image_4/center':
         tf.FixedLenFeature((2, 1), dtype=tf.int64),
+        'mosh/gt3d_4':
+        tf.FixedLenFeature((14 * 3, ), dtype=tf.float32),
 
     }
     if has_3d:
@@ -204,6 +212,10 @@ def parse_example_proto(example_serialized, has_3d=False):
     image_size_3 = tf.concat([height_3, width_3], 0)
     image_size_4 = tf.concat([height_4, width_4], 0)
 
+    gt3d_1 = tf.reshape(tf.cast(features['mosh/gt3d_1'], dtype=tf.float32), [14, 3])
+    gt3d_2 = tf.reshape(tf.cast(features['mosh/gt3d_2'], dtype=tf.float32), [14, 3])
+    gt3d_3 = tf.reshape(tf.cast(features['mosh/gt3d_3'], dtype=tf.float32), [14, 3])
+    gt3d_4 = tf.reshape(tf.cast(features['mosh/gt3d_4'], dtype=tf.float32), [14, 3])
     if has_3d:
         pose = tf.cast(features['mosh/pose'], dtype=tf.float32)
         shape = tf.cast(features['mosh/shape'], dtype=tf.float32)
@@ -214,7 +226,7 @@ def parse_example_proto(example_serialized, has_3d=False):
     else:
         # return image, image_size, label, center, fname
         # return image, label 
-        return image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4, image_size_1, image_size_2, image_size_3, image_size_4, center_1, center_2,center_3, center_4
+        return image_1, label_1, image_2, label_2, image_3, label_3, image_4, label_4, image_size_1, image_size_2, image_size_3, image_size_4, center_1, center_2,center_3, center_4, gt3d_1, gt3d_2, gt3d_3, gt3d_4
 def rescale_image(image):
     """
     Rescales image from [0, 1] to [-1, 1]

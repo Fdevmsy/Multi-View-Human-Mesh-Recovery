@@ -96,8 +96,16 @@ class HMRTrainer(object):
         self.kp_loader_2 = data_loader['label_2']
         self.kp_loader_3 = data_loader['label_3']
         self.kp_loader_4 = data_loader['label_4']
+
+        ## shiyu 3d label
+        self.gt3d = data_loader['gt3d_1']
+        # self.gt3d_2 = data_loader['gt3d_2']
+        # self.gt3d_3 = data_loader['gt3d_3']
+        # self.gt3d_4 = data_loader['gt3d_4']
         ## shape=(64, 19, 3)
 
+        ## gt3d 
+        self.has_gt3d_joints = data_loader['has_3d_joints']
         if self.use_3d_label:
             self.poseshape_loader = data_loader['label3d']
             # image_loader[3] is N x 2, first column is 3D_joints gt existence,
@@ -160,7 +168,7 @@ class HMRTrainer(object):
 
             def load_pretrain(sess):
                 self.pre_train_saver.restore(sess, self.pretrained_model_path)
-                print('trained model restored!')
+                print("Fine-tuning from %s" % self.pretrained_model_path)
 
             init_fn = load_pretrain
 
@@ -247,6 +255,8 @@ class HMRTrainer(object):
         
         if self.use_3d_label:
             loss_3d_joints, loss_3d_params = [], []
+        # shiyu gt3d
+        loss_3d_joints = []
         # For discriminator
         fake_rotations, fake_shapes = [], []
         # Start loop
@@ -297,12 +307,15 @@ class HMRTrainer(object):
             loss_kps.append(self.e_loss_weight * self.keypoint_loss(
                 self.kp_loader, pred_kp))
             pred_Rs = tf.reshape(pred_Rs, [-1, 24, 9])
-            if self.use_3d_label:
-                loss_poseshape, loss_joints = self.get_3d_loss(
-                    pred_Rs, shapes, Js)
-                loss_3d_params.append(loss_poseshape)
-                loss_3d_joints.append(loss_joints)
-
+            # if self.use_3d_label:
+            #     loss_poseshape, loss_joints = self.get_3d_loss(
+            #         pred_Rs, shapes, Js)
+            #     loss_3d_params.append(loss_poseshape)
+            #     loss_3d_joints.append(loss_joints)
+            # shiyu gt3d
+            loss_joints = self.get_3d_loss(
+                pred_Rs, shapes, Js)
+            loss_3d_joints.append(loss_joints)
             # Save pred_rotations for Discriminator
             fake_rotations.append(pred_Rs[:, 1:, :])
             fake_shapes.append(shapes)
@@ -431,6 +444,8 @@ class HMRTrainer(object):
             # Just the last loss.
             # shiyu, add loss from view 2, 3, 4
             self.e_loss_kp = loss_kps[-1] + 0.3 * loss_kps_2[-1] + 0.3 * loss_kps_3[-1] + 0.3 * loss_kps_4[-1]
+            # shiyu gt3d
+            self.e_loss_3d_joints = loss_3d_joints[-1]
 
             if self.encoder_only:
                 self.e_loss = self.e_loss_kp
@@ -506,6 +521,10 @@ class HMRTrainer(object):
             always_report.append(
                 tf.summary.scalar("loss/e_loss_3d_joints_noscale",
                                   self.e_loss_3d_joints / self.e_3d_weight))
+        ## shiyu gt3d
+        always_report.append(
+                tf.summary.scalar("3D joints MSE score",
+                                  self.e_loss_3d_joints))
 
         if not self.encoder_only:
             summary_occ = []
@@ -587,11 +606,13 @@ class HMRTrainer(object):
         Rs = tf.reshape(Rs, [self.batch_size, -1])
         params_pred = tf.concat([Rs, shape], 1, name="prep_params_pred")
         # 24*9+10 = 226
-        gt_params = self.poseshape_loader[:, :226]
-        loss_poseshape = self.e_3d_weight * compute_3d_loss(
-            params_pred, gt_params, self.has_gt3d_smpl)
+        # # pose and shape GT
+        # gt_params = self.poseshape_loader[:, :226]
+        # loss_poseshape = self.e_3d_weight * compute_3d_loss(
+        #     params_pred, gt_params, self.has_gt3d_smpl)
         # 14*3 = 42
-        gt_joints = self.poseshape_loader[:, 226:]
+        # gt_joints = self.poseshape_loader[:, 226:]
+        gt_joints = self.gt3d
         pred_joints = Js[:, :14, :]
         # Align the joints by pelvis.
         pred_joints = align_by_pelvis(pred_joints)
@@ -603,7 +624,7 @@ class HMRTrainer(object):
         loss_joints = self.e_3d_weight * compute_3d_loss(
             pred_joints, gt_joints, self.has_gt3d_joints)
 
-        return loss_poseshape, loss_joints
+        return loss_joints
 
     def visualize_img(self, img, gt_kp, vert, pred_kp, cam, renderer):
         """
@@ -697,7 +718,9 @@ class HMRTrainer(object):
                     "e_loss": self.e_loss,
                     # The meat
                     "e_opt": self.e_opt,
-                    "loss_kp": self.e_loss_kp
+                    "loss_kp": self.e_loss_kp,
+                    # shiyu gt3d
+                    "loss_3d_joints": self.e_loss_3d_joints
                 }
                 if not self.encoder_only:
                     fetch_dict.update({

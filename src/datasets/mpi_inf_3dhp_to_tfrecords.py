@@ -341,7 +341,7 @@ def save_to_tfrecord(out_name, im_paths_list, gt2ds_list, gt3ds_list, cams_list,
 
 				example = convert_to_example_wmosh(
 					image_data_scaled_1, image_data_scaled_2, image_data_scaled_3, image_data_scaled_4, 
-					im_path_1, height_1, height_2,height_3,height_4,width_1, width_2,width_3,width_4, label_1, label_2, label_3, label_4, center_scaled_1, center_scaled_2,center_scaled_3,center_scaled_4,gt3d_1,
+					im_path_1, height_1, height_2,height_3,height_4,width_1, width_2,width_3,width_4, label_1, label_2, label_3, label_4, center_scaled_1, center_scaled_2,center_scaled_3,center_scaled_4,gt3d_1,gt3d_2,gt3d_3,gt3d_4,
 					pose_1, shape_1, scale_factors_1, start_pt_1, cam_scaled_1)
 				writer.write(example.SerializeToString())
 				

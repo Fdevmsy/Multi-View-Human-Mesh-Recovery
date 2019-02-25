@@ -146,7 +146,7 @@ def convert_to_example(image_data, image_path, height, width, label, center):
 
 
 def convert_to_example_wmosh(image_data_1, image_data_2, image_data_3, image_data_4, 
-    image_path, height_1, height_2,height_3,height_4,width_1, width_2,width_3,width_4,label_1, label_2, label_3, label_4, center_1,center_2,center_3,center_4, gt3d, pose, 
+    image_path, height_1, height_2,height_3,height_4,width_1, width_2,width_3,width_4,label_1, label_2, label_3, label_4, center_1,center_2,center_3,center_4, gt3d_1,gt3d_2,gt3d_3,gt3d_4, pose, 
     shape, scale_factors, start_pt, cam):
     """Build an Example proto for an image example.
     Args:
@@ -204,8 +204,8 @@ def convert_to_example_wmosh(image_data_1, image_data_2, image_data_3, image_dat
             float_feature(pose.astype(np.float)),
             'mosh/shape':
             float_feature(shape.astype(np.float)),
-            'mosh/gt3d':
-            float_feature(gt3d.ravel().astype(np.float)),
+            # 'mosh/gt3d':
+            # float_feature(gt3d.ravel().astype(np.float)),
             'meta/scale_factors':
             float_feature(np.array(scale_factors).astype(np.float)),
             'meta/crop_pt':
@@ -239,7 +239,8 @@ def convert_to_example_wmosh(image_data_1, image_data_2, image_data_3, image_dat
             int64_feature(width_1),
             'image_1/center':
             int64_feature(center_1.astype(np.int)),
-
+            'mosh/gt3d_1':
+            float_feature(gt3d_1.ravel().astype(np.float)),
             # other views shiyu view 2 
             'image_2/encoded':
             bytes_feature(tf.compat.as_bytes(image_data_2)),
@@ -255,6 +256,8 @@ def convert_to_example_wmosh(image_data_1, image_data_2, image_data_3, image_dat
             int64_feature(width_2),
             'image_2/center':
             int64_feature(center_2.astype(np.int)),
+            'mosh/gt3d_2':
+            float_feature(gt3d_2.ravel().astype(np.float)),            
         
             # other views shiyu view 3 
             'image_3/encoded':
@@ -271,7 +274,8 @@ def convert_to_example_wmosh(image_data_1, image_data_2, image_data_3, image_dat
             int64_feature(width_3),
             'image_3/center':
             int64_feature(center_3.astype(np.int)),
-
+            'mosh/gt3d_3':
+            float_feature(gt3d_3.ravel().astype(np.float)),
             # other views shiyu view 4
             'image_4/encoded':
             bytes_feature(tf.compat.as_bytes(image_data_4)),
@@ -287,6 +291,8 @@ def convert_to_example_wmosh(image_data_1, image_data_2, image_data_3, image_dat
             int64_feature(width_4),
             'image_4/center':
             int64_feature(center_4.astype(np.int)),
+            'mosh/gt3d_4':
+            float_feature(gt3d_4.ravel().astype(np.float)),
             # check filename maybe
         }))
 
